@@ -77,30 +77,29 @@ describe('The step module',function()
         }
       end)
     
+    it('try / catch / finally works with error',async,function(done)
+        local spies = {
+          try = {
+            spy.new(function(callbacks)
+                callbacks.error('terror')
+              end),
+            spy.new(function()
+              end)
+          },
+          catch = spy.new(function()
+            end)
+        }
+        step{
+          try = spies.try,
+          catch = spies.catch,
+          finally = guard(function(s)
+              assert.spy(spies.try[1]).was.called(1)
+              assert.spy(spies.try[2]).was_not.called()
+              assert.spy(spies.catch).was.called_with('terror')
+              assert.is_nil(s)
+              done()
+            end)
+        }
+      end)
+    
   end)
-
-it('try / catch / finally works with error',async,function(done)
-    local spies = {
-      try = {
-        spy.new(function(callbacks)
-            callbacks.error('terror')
-          end),
-        spy.new(function()
-          end)
-      },
-      catch = spy.new(function()
-        end)
-    }
-    step{
-      try = spies.try,
-      catch = spies.catch,
-      finally = guard(function(s)
-          assert.spy(spies.try[1]).was.called(1)
-          assert.spy(spies.try[2]).was_not.called()
-          assert.spy(spies.catch).was.called_with('terror')
-          assert.is_nil(s)
-          done()
-        end)
-    }
-  end)
-
