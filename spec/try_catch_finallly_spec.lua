@@ -95,9 +95,9 @@ it('try / catch / finally works with error',async,function(done)
       try = spies.try,
       catch = spies.catch,
       finally = guard(function(s)
-          --                                        assert.spy(spies.try[1]).was.called(1)
-          --                                      assert.spy(spies.try[2]).was_not.called()
-          --                                    assert.spy(spies.catch).was.called_with('terror')
+          assert.spy(spies.try[1]).was.called(1)
+          assert.spy(spies.try[2]).was_not.called()
+          assert.spy(spies.catch).was.called_with('terror')
           assert.is_nil(s)
           done()
         end)
