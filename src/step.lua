@@ -8,16 +8,17 @@ local try_catch_finally_executer = function(options)
     try_index = try_index + 1
     local tryf = tries[try_index]
     if tryf then
-      local args = {...}
-      tinsert(args,callbacks)
+      local args = {callbacks,...}
       local ok,err = {tryf(unpack(args))}
       if not ok then
         callbacks.error(err)
       end
-    elseif options.finally then
-      local ok,err = pcall(options.finally,...)
-      if not ok then
-        print('lua-step finally function failed:',err)
+    else
+      if options.finally then
+        local ok,err = pcall(options.finally,...)
+        if not ok then
+          print('lua-step finally function failed:',err)
+        end
       end
     end
   end
