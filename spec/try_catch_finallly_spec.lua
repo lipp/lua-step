@@ -62,9 +62,37 @@ describe('The step module',function()
             spy.new(function()
               end)
           },
+          catch = spy.new(function(err) end),
         }
         step{
           try = spies.try,
+          catch = spies.catch,
+          finally = async(function(s)
+              assert.spy(spies.try[1]).was.called(1)
+              assert.spy(spies.try[2]).was_not.called()
+              assert.spy(spies.catch).was.called_with('terror')
+              assert.is_nil(s)
+              done()
+            end)
+        }
+      end)
+    
+    it('try / finally works with unexpected error',function(done)
+        local foo = {}
+        local spies = {
+          try = {
+            spy.new(function(callbacks)
+                error(foo)
+              end),
+            spy.new(function()
+              end)
+          },
+        }
+        step{
+          try = spies.try,
+          catch = async(function(err)
+              assert.is_same(err,foo)
+            end),
           finally = async(function(s)
               assert.spy(spies.try[1]).was.called(1)
               assert.spy(spies.try[2]).was_not.called()
