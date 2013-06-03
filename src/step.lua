@@ -9,7 +9,7 @@ local try_catch_finally_executer = function(options)
     local tryf = tries[try_index]
     if tryf then
       local args = {callbacks,...}
-      local ok,err = {tryf(unpack(args))}
+      local ok,err = pcall(tryf,callbacks,...)
       if not ok then
         callbacks.error(err)
       end
