@@ -5,15 +5,15 @@ describe('The step module',function()
         assert.is_equal(type(step),'function')
       end)
     
-    it('try / finally works with no error',async,function(done)
+    it('try / finally works with no error',function(done)
         step{
           try = {
-            guard(function(callbacks)
+            async(function(callbacks)
                 assert.is_equal(type(callbacks.success),'function')
                 assert.is_equal(type(callbacks.error),'function')
                 callbacks.success(123,'hello')
               end),
-            guard(function(callbacks,n,s)
+            async(function(callbacks,n,s)
                 assert.is_equal(n,123)
                 assert.is_equal(s,'hello')
                 assert.is_equal(type(callbacks.success),'function')
@@ -21,14 +21,39 @@ describe('The step module',function()
                 callbacks.success('some arg')
               end)
           },
-          finally = guard(function(s)
+          finally = async(function(s)
               assert.is_equal(s,'some arg')
               done()
             end)
         }
       end)
     
-    it('try / finally works with error',async,function(done)
+    it('tries can be added async',function(done)
+        local try
+        try = {
+          async(function(callbacks)
+              try[2] = async(function(callbacks,n,s)
+                  assert.is_equal(n,123)
+                  assert.is_equal(s,'hello')
+                  assert.is_equal(type(callbacks.success),'function')
+                  assert.is_equal(type(callbacks.error),'function')
+                  callbacks.success('some arg')
+                end)
+              assert.is_equal(type(callbacks.success),'function')
+              assert.is_equal(type(callbacks.error),'function')
+              callbacks.success(123,'hello')
+            end)
+        }
+        step{
+          try = try,
+          finally = async(function(s)
+              assert.is_equal(s,'some arg')
+              done()
+            end)
+        }
+      end)
+    
+    it('try / finally works with error',function(done)
         local spies = {
           try = {
             spy.new(function(callbacks)
@@ -40,7 +65,7 @@ describe('The step module',function()
         }
         step{
           try = spies.try,
-          finally = guard(function(s)
+          finally = async(function(s)
               assert.spy(spies.try[1]).was.called(1)
               assert.spy(spies.try[2]).was_not.called()
               assert.is_nil(s)
@@ -51,15 +76,15 @@ describe('The step module',function()
     
     
     
-    it('try / catch / finally works with no error',async,function(done)
+    it('try / catch / finally works with no error',function(done)
         step{
           try = {
-            guard(function(callbacks)
+            async(function(callbacks)
                 assert.is_equal(type(callbacks.success),'function')
                 assert.is_equal(type(callbacks.error),'function')
                 callbacks.success(123,'hello')
               end),
-            guard(function(callbacks,n,s)
+            async(function(callbacks,n,s)
                 assert.is_equal(n,123)
                 assert.is_equal(s,'hello')
                 assert.is_equal(type(callbacks.success),'function')
@@ -67,17 +92,17 @@ describe('The step module',function()
                 callbacks.success('some arg')
               end)
           },
-          catch = guard(function(err)
+          catch = async(function(err)
               assert.is_falsy('should not reach here')
             end),
-          finally = guard(function(s)
+          finally = async(function(s)
               assert.is_equal(s,'some arg')
               done()
             end)
         }
       end)
     
-    it('try / catch / finally works with error',async,function(done)
+    it('try / catch / finally works with error',function(done)
         local spies = {
           try = {
             spy.new(function(callbacks)
@@ -92,7 +117,7 @@ describe('The step module',function()
         step{
           try = spies.try,
           catch = spies.catch,
-          finally = guard(function(s)
+          finally = async(function(s)
               assert.spy(spies.try[1]).was.called(1)
               assert.spy(spies.try[2]).was_not.called()
               assert.spy(spies.catch).was.called_with('terror')
