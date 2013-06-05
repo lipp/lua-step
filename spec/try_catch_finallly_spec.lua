@@ -12,6 +12,7 @@ describe('The step module',function()
       assert.is_table(i.context)
       assert.is_table(i.result)
       assert.is_table(i.try)
+      assert.is_number(i.index)
     end
     
     it('try / finally works with no error',function(done)
@@ -19,10 +20,12 @@ describe('The step module',function()
           try = {
             async(function(step)
                 assert_is_step_instance(step)
+                assert.is_equal(step.index,1)
                 step.success(123,'hello')
               end),
             async(function(step,n,s)
                 assert_is_step_instance(step)
+                assert.is_equal(step.index,2)
                 assert.is_equal(n,123)
                 assert.is_equal(s,'hello')
                 step.context.foo = 'bar'

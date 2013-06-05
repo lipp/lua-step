@@ -5,7 +5,6 @@ local try_catch_finally_executer = function(options)
   local tries = options.try
   local self = {}
   local clean = function()
-    setmetatable(self,{})
     self.result = nil
     self.context = nil
     self.try = nil
@@ -14,6 +13,7 @@ local try_catch_finally_executer = function(options)
   self.success = function(...)
     self.result[try_index] = {...}
     try_index = try_index + 1
+    self.index = try_index
     local tryf = tries[try_index]
     if tryf then
       local args = {self,...}
@@ -49,7 +49,6 @@ local try_catch_finally_executer = function(options)
   self.context = {}
   self.result = {}
   self.try = tries
-  self = setmetatable(self,{__newindex = function() error('lua-step table is read-only') end})
   return self.success
 end
 
