@@ -64,7 +64,7 @@ some_async_action()
 
 ### step.new (function)
 
-Creates a step instance. Argument `arg` is a table with the following fields:
+Creates a step instance and returns a function which starts execution. Argument `arg` is a table with the following fields:
 
 #### arg.try
 
