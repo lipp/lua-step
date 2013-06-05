@@ -128,7 +128,7 @@ code in finally, e.g.:
 local async_op = step.new({
   try = {
     [1] = function(step)
-	  step.context.file = io.open('foo.txt')
+	  ...
 	end,
     ...
     [3] = function(step)
