@@ -1,10 +1,6 @@
 # About
 
-Un-nest and simplify asynchronous control flow.
-
-# Usage
-
-See spec folder with busted tests.
+Un-nest asynchronous control flow.
 
 # Installation
 
@@ -18,37 +14,39 @@ See spec folder with busted tests.
 
 # Doc
 
+## Wrap up
+
 ```lua
 
 local step = require'step'
 
-step({
+local some_async_action = step.new({
   try = {
-    [1] = function(callbacks)
+    [1] = function(step)
       -- do some async stuff
 	  ...
 	  -- the first argument to all try functions
-	  -- is the callbacks table
-      callbacks.success(123,'abc')
+	  -- is the step table
+      step.success(123,'abc')
     end,
-    [2] = function(callbacks,num,str)
-      -- arguments to callbacks.success are forwarded to the 
+    [2] = function(step,num,str)
+      -- arguments to step.success are forwarded to the 
 	  -- next function in try list.
       -- so num==123 and str=='abc' 
       -- do some more async stuff
 	  ...
-	  callbacks.success({1,2,3})
+	  step.success({1,2,3})
     end,
-    [3] = function(callbacks,array)
+    [3] = function(step,array)
 	  if array[2] == 78 then
-	    callbacks.success()
+	    step.success()
 	  else
-	    callbacks.error('something went wrong')
+	    step.error('something went wrong')
 	  end
     end,
   },
   catch = function(err)
-    -- catch will be called when callbacks.error has been called
+    -- catch will be called when step.error has been called
 	-- or if some error happened (is thrown).
 	-- no further try step will be executed.
 	print('ERROR',err)
@@ -58,4 +56,94 @@ step({
 	cleanup_some_stuff()
   end
 })
+
+some_async_action()
 ```
+
+## The step table (module)
+
+### step.new (function)
+
+Creates a step instance. Argument `arg` is a table with the following fields:
+
+#### arg.try
+
+An array of functions which should be executed.
+
+#### arg.catch
+
+A function which is called on error, optional.
+
+### arg.finally
+
+A function which is executed either after last try finished or after catch was invoked in casew of error, optional
+
+
+## The step table (passed to callbacks)
+
+### step.success (function)
+
+Progresses with the next `try` entry or with `finally` if it was the last `try` entry.
+All arguments are forwarded to the respective function as additional function arguments.
+
+### step.error (function)
+
+Progresses with the `catch` function and passes the `err` as additional argument to `catch`.
+After `catch` has been called, `finally` will be called.
+
+### step.result (array)
+
+Array (table), which holds all results (arguments which have been passed to step.success) for each `try` entry.
+
+### step.index (number)
+
+The currently executed function index inside the `try` array. Useful to manipulate `step.try` at runtime.
+
+### step.try (array)
+
+Array of functions. Try steps can be inserted at runtime, using this array and `step.index`.
+
+```lua
+local async_op = step.new({
+  try = {
+	...
+    function(step)
+	  -- insert a try step on-the-fly right
+	  -- after this step.
+	  table.insert(step.try,step.index+1,function(step)
+	    ...
+	  end)
+	end,
+    ...
+  }
+})
+```
+
+### step.context (table)
+
+A table which can be freely used to store context between `try` entries and/or `finally` call. Useful for doing cleanup
+code in finally, e.g.:
+
+```lua
+local async_op = step.new({
+  try = {
+    [1] = function(step)
+	  step.context.file = io.open('foo.txt')
+	end,
+    ...
+    [3] = function(step)
+	  step.context.file = io.open('foo.txt')
+	end,
+	...
+  },
+  finally = function(step)
+    if step.context.file then
+	  step.context.file:close()
+    end
+  end
+})
+```
+
+## Examples
+
+See spec folder with busted tests for more examples.
