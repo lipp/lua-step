@@ -2,58 +2,6 @@
 
 Un-nest asynchronous control flow.
 
-As asynchronous control flow gets more complex readability suffers
-greatly. Often the code for a "simple" synchronous sequence of operations got
-deeply nested in async programming:
-
-```lua
---------------------
--- sync flow
---------------------
-local ok,err = pcall(function()
-  a()
-  b()
-  c()
-  print('yup')
-end)
-
-if ok then
-  ...
-else
-  ...
-end
-
---------------------
--- becomes
---------------------
-local on_error = function() ... end
-
-a({
-  success = function()
-    b({
-      success = function()
-        c({
-          success = function()
-            print('yup')
-          end,
-          error = on_error
-        })
-      end,
-      error = on_error
-    })
-  end,
-  error = on_error
-})
-```
-
-Worse, if results or state has to be shared between `a`,`b` and `c`
-lots up upvalues are required. A comparison of programming async with
-and without lua-step can be found in the `example` folder.
-
-lua-step tries to improve readibility and maintainablity of async
-control flows.
-
-
 # Installation
 
     $ git clone https://github.com/lipp/lua-step.git
@@ -64,7 +12,7 @@ control flows.
 
 [![Build Status](https://travis-ci.org/lipp/lua-step.png?branch=master)](https://travis-ci.org/lipp/lua-step/builds)
 
-## Wrap up
+# Wrap up
 
 ```lua
 
@@ -109,6 +57,8 @@ local some_async_action = step.new({
 
 some_async_action()
 ```
+
+# API
 
 ## The step table (module)
 
@@ -196,4 +146,102 @@ local async_op = step.new({
 
 ## Examples
 
-See spec folder with busted tests for more examples.
+See `spec` folder with busted tests and `examples` folder for more
+examples.
+
+# Motivation
+
+As asynchronous control flow gets more complex readability suffers
+greatly. Often the code for a "simple" synchronous sequence of operations got
+deeply nested in async programming:
+
+```lua
+--------------------
+-- sync flow
+--------------------
+local ok,err = pcall(function()
+  a()
+  b()
+  c()
+  print('yup')
+end)
+
+if ok then
+  ...
+else
+  ...
+end
+
+--------------------
+-- becomes
+--------------------
+local on_error = function() ... end
+
+a({
+  success = function()
+    b({
+      success = function()
+        c({
+          success = function()
+            print('yup')
+          end,
+          error = on_error
+        })
+      end,
+      error = on_error
+    })
+  end,
+  error = on_error
+})
+```
+
+Worse, if results or state has to be shared between `a`,`b` and `c`
+lots up upvalues are required. A comparison of programming async with
+and without lua-step can be found in the `example` folder.
+
+Moreover programmatic executing async execution steps hardly possible
+without (a mechanism similar to) lua-step.
+
+```lua
+--------------------
+-- sync flow
+--------------------
+local exec_steps = read_config()
+
+local ok,err = pcall(function()
+  for _,exec_step in ipairs(exec_steps) do
+    exec_step()
+  end
+end
+
+if not ok then
+  ...
+end
+
+cleanup()
+
+--------------------
+-- becomse without lua-step
+--------------------
+
+-- ???
+-- ???
+-- ???
+
+--------------------
+-- becomse with lua-step
+--------------------
+local async_exec_steps = read_config()
+
+local try = async_exec_steps
+
+local exec_all_async_steps = step.new({
+  try = async_exec_steps,
+  catch = on_error,
+  finally = cleanup
+})
+
+```
+
+lua-step tries to improve readibility and maintainablity of async
+control flows.
