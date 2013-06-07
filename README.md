@@ -144,9 +144,9 @@ local async_op = step.new({
 })
 ```
 
-## Examples
+# Examples
 
-See `spec` folder with busted tests and `examples` folder for more
+See `spec` folder with [busted](https://github.com/Olivine-Labs/busted) tests and `examples` folder for more
 examples.
 
 # Motivation
@@ -199,7 +199,7 @@ Worse, if results or state has to be shared between `a`,`b` and `c`
 lots up upvalues are required. A comparison of programming async with
 and without lua-step can be found in the `example` folder.
 
-Moreover programmatic executing async execution steps hardly possible
+Moreover, programmatically executing async execution steps is hardly possible
 without (a mechanism similar to) lua-step.
 
 ```lua
@@ -241,6 +241,7 @@ local exec_all_async_steps = step.new({
   finally = cleanup
 })
 
+exec_all_async_steps()
 ```
 
 lua-step tries to improve readibility and maintainablity of async
