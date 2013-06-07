@@ -2,6 +2,58 @@
 
 Un-nest asynchronous control flow.
 
+As asynchronous control flow gets more complex readability suffers
+greatly. Often the code for a "simple" synchronous sequence of operations got
+deeply nested in async programming:
+
+```lua
+--------------------
+-- sync flow
+--------------------
+local ok,err = pcall(function()
+  a()
+  b()
+  c()
+  print('yup')
+end)
+
+if ok then
+  ...
+else
+  ...
+end
+
+--------------------
+-- becomes
+--------------------
+local on_error = function() ... end
+
+a({
+  success = function()
+    b({
+      success = function()
+        c({
+          success = function()
+            print('yup')
+          end,
+          error = on_error
+        })
+      end,
+      error = on_error
+    })
+  end,
+  error = on_error
+})
+```
+
+Worse, if results or state has to be shared between `a`,`b` and `c`
+lots up upvalues are required. A comparison of programming async with
+and without lua-step can be found in the `example` folder.
+
+lua-step tries to improve readibility and maintainablity of async
+control flows.
+
+
 # Installation
 
     $ git clone https://github.com/lipp/lua-step.git
@@ -11,8 +63,6 @@ Un-nest asynchronous control flow.
 # Build status
 
 [![Build Status](https://travis-ci.org/lipp/lua-step.png?branch=master)](https://travis-ci.org/lipp/lua-step/builds)
-
-# Doc
 
 ## Wrap up
 
