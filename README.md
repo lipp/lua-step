@@ -22,36 +22,36 @@ local some_async_action = step.new({
   try = {
     [1] = function(step)
       -- do some async stuff
-	  ...
-	  -- the first argument to all try functions
-	  -- is the step table
+      ...
+      -- the first argument to all try functions
+      -- is the step table
       step.success(123,'abc')
     end,
     [2] = function(step,num,str)
       -- arguments to step.success are forwarded to the 
-	  -- next function in try list.
+      -- next function in try list.
       -- so num==123 and str=='abc' 
       -- do some more async stuff
-	  ...
-	  step.success({1,2,3})
+      ...
+      step.success({1,2,3})
     end,
     [3] = function(step,array)
-	  if array[2] == 78 then
-	    step.success()
-	  else
-	    step.error('something went wrong')
-	  end
+      if array[2] == 78 then
+        step.success()
+      else
+        step.error('something went wrong')
+      end
     end,
   },
   catch = function(err)
     -- catch will be called when step.error has been called
-	-- or if some error happened (is thrown).
-	-- no further try step will be executed.
-	print('ERROR',err)
+    -- or if some error happened (is thrown).
+    -- no further try step will be executed.
+    print('ERROR',err)
   end,
   finally = function()
     -- finally is called in any case
-	cleanup_some_stuff()
+    cleanup_some_stuff()
   end
 })
 
