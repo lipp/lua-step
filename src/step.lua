@@ -5,10 +5,12 @@ local try_catch_finally_executer = function(options)
   local tries = options.try
   local self = {}
   local clean = function()
-    self.result = nil
-    self.context = nil
-    self.try = nil
-    self = nil
+    if self then
+      self.result = nil
+      self.context = nil
+      self.try = nil
+      self = nil
+    end
   end
   self.success = function(...)
     self.result[try_index] = {...}
